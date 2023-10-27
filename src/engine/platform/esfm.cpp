@@ -23,6 +23,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
+#include "../../../extern/ESFMu/InpOut32Helper.h"
 
 #define CHIP_FREQBASE (32768*288)
 
@@ -1058,6 +1059,13 @@ void DivPlatformESFM::setFast(bool fast) {
 }
 
 int DivPlatformESFM::init(DivEngine* p, int channels, int sugRate, const DivConfig& flags) {
+  static bool alreadyStartedOnce = false;
+
+  if (!alreadyStartedOnce) {
+    OpenInpOut32();
+    alreadyStartedOnce = true;
+  }
+  
   parent=p;
   dumpWrites=false;
   skipRegisterWrites=false;
@@ -1078,4 +1086,5 @@ void DivPlatformESFM::quit() {
 }
 
 DivPlatformESFM::~DivPlatformESFM() {
+  //CloseInpOut32();
 }

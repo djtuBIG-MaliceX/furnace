@@ -20,6 +20,23 @@
 #include "../dispatch.h"
 #include "../../fixedQueue.h"
 #include "../../../extern/ESFMu/esfm.h"
+#include "../../../extern/ESFMu/InpOut32Helper.h"
+
+#ifndef DWORD_PTR
+    #if defined(_WIN64)
+        #define DWORD_PTR unsigned __int64
+    #else
+        #define DWORD_PTR unsigned long
+    #endif
+#endif
+
+#ifndef LOBYTE
+#define LOBYTE(w)           ((uint8_t)(((DWORD_PTR)(w)) & 0xff))
+#endif
+
+#ifndef HIBYTE
+#define HIBYTE(w)           ((uint8_t)((((DWORD_PTR)(w)) >> 8) & 0xff))
+#endif
 
 // ESFM register address space technically spans 0x800 (2048) bytes,
 // but we only need the first 0x254 (596) during normal use.
@@ -141,10 +158,17 @@ class DivPlatformESFM: public DivDispatch {
 
   inline void immWrite(unsigned short a, unsigned char v) {
     if (!skipRegisterWrites) {
-      writes.push_back(QueuedWrite(a,v));
-      if (dumpWrites) {
-        addWrite(a,v);
-      }
+      // writes.push_back(QueuedWrite(a,v));
+      // if (dumpWrites) {
+      //   addWrite(a,v);
+      // }
+
+      static unsigned short m_pSBBase = 0xefb0;  // mine
+      //static unsigned short m_pSBBase = 0xde00; // CatButts
+      //static unsigned short m_pSBBase = 0xC480; // gtr3qq
+      outportb(m_pSBBase + 2, LOBYTE(a));
+      outportb(m_pSBBase + 3, HIBYTE(a));
+      outportb(m_pSBBase + 1, v);
     }
   }
 
